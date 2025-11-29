@@ -52,7 +52,10 @@ A Windows Virtual Machine is used as the target machine. It is isolated by confi
 
 Specifically, the Windows 7 machine is chosen for this, as the MS17-010 patch is not applied to it, thus making it a perfect target.
 
-![**Figure 1: Windows Patch history information**](images/figure1EHIR.png)
+<p align="center">
+  <img src="images/figure1EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 1:</b> Windows Patch history information</p>
 
 Wireshark is set running before the exploit is pushed to analyze the setup and the strike. The interesting traffic sits around SMB negotiation and subsequent Trans2/Tree Connect pattern gotten during the exploit attempt. Capturing first and acting after it keeps it clean and concrete by allowing to see the actual handshake and the post-connect behaviour.
 
@@ -96,28 +99,46 @@ The objective of this stage is to gather preliminary information about the targe
 
 The network adapter of both the Windows 7 machine and Kali Linux Virtual Machines (VMs) are set to custom, then VMnet1 for “Host-Only” connection to ensure isolation.
 
-![**Figure 2: Kali Linux network adapter information **](images/figure2EHIR.png)
+<p align="center">
+  <img src="images/figure2EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 2:</b> Kali Linux network adapter information</p>
 
-![**Figure 3: Windows 7 network adapter information**](images/figure3EHIR.png)
+<p align="center">
+  <img src="images/figure3EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 3:</b> Windows 7 network adapter information</p>
 
 Then ICMP and SMB inbound is enabled by going to `Control Panel -> Windows Firewall -> Advanced Security -> Inbound Rules` and setting both to “enable rule”. 
 
-![**Figure 4: Inbound rules allowing ICMP and SMB inbound **](images/figure4EHIR.png)
+<p align="center">
+  <img src="images/figure4EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 4:</b> Inbound rules allowing ICMP and SMB inbound</p>
 
 Then, as an additional measure, it is also checked whether the Windows Machine can run SMB protocol, where “STATE: 4 RUNNING” ensures it.
 
-![**Figure 5: Checking SMB Protocol **](images/figure5EHIR.png)
+<p align="center">
+  <img src="images/figure5EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 5:</b> Checking SMB Protocol</p>
 
 Finally, both Kali Linux and Windows 7 machines’ IP addresses are checked using `ifconfig` and `ipconfig`. This is to ensure that both machines are in the same subnet and can communicate with each other through pinging.
 
-![**Figure 6: Windows 7 machine IP address**](images/figure6EHIR.png)
+<p align="center">
+  <img src="images/figure6EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 6:</b> Windows 7 machine IP address</p>
 
+<p align="center">
+  <img src="images/figure7EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 7:</b> Kali Linux IP address</p>
 
-![**Figure 7: Kali Linux IP address **](images/figure7EHIR.png)
- 
-
-![**Figure 8: Pinging Windows 7 machine from Kali Linux**](images/figure8XEHIR.png)
-
+<p align="center">
+  <img src="images/figure8EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 8:</b> Pinging Windows 7 machine from Kali Linux</p>
 
 ---
 
@@ -129,13 +150,17 @@ The objective of this section is to identify open SMB ports and confirm the pres
 
 A basic port scan is done to check that port 445 is listed as “open”.
 
-![**Figure 9: Port Scan on port 445 with results**](images/figure9EHIR.png)
-
+<p align="center">
+  <img src="images/figure9EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 9:</b> Port Scan on port 445 with results</p>
 
 Then Nmap’s script is used to confirm whether the MS17-010 (EternalBlue) exists. This Nmap scan confirms that our target is susceptible to the critical structural weakness that WannaCry exploited.
 
-![**Figure 10: Confirming the Existence of the Eternal Blue exploit using Nmap script**](images/figure10EHIR.png)
-
+<p align="center">
+  <img src="images/figure10EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 10:</b> Confirming the Existence of the Eternal Blue exploit using Nmap script</p>
 
 ---
 
@@ -147,13 +172,17 @@ This core section uses the Metasploit framework to exploit the vulnerability and
 
 Wireshark is opened, to begin the packet capture and to monitor the network.
 
-![**Figure 11: Wireshark begins to monitor network**](images/figure11EHIR.png)
-
+<p align="center">
+  <img src="images/figure11EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 11:</b> Wireshark begins to monitor network</p>
 
 A few dummy files are created in the desktop folder.
 
-![**Figure 12: Dummy files created**](images/figure12EHIR.png)
-
+<p align="center">
+  <img src="images/figure12EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 12:</b> Dummy files created</p>
 
 ---
 
@@ -161,13 +190,17 @@ A few dummy files are created in the desktop folder.
 
 The Eternal Blue exploit is selected to simulate the WannaCry mechanism. It is also set with other exploit options as configuration.
 
-![**Figure 13: Configuring Metasploit for Eternal Blue**](images/figure13EHIR.png)
- 
+<p align="center">
+  <img src="images/figure13EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 13:</b> Configuring Metasploit for Eternal Blue</p>
 
 A meterpreter reverse TCP payload is then used for an interactive shell. The `show options` command is also used to confirm the payload settings set previously.
 
-![**Figure 14: Creating the payload**](images/figure14EHIR.png)
-  
+<p align="center">
+  <img src="images/figure14EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 14:</b> Creating the payload</p>
 
 ---
 
@@ -175,18 +208,24 @@ A meterpreter reverse TCP payload is then used for an interactive shell. The `sh
 
 The malware executable is then created at the `/var/www/html/share` directory which is a directory under the Apache’s web root.
 
-![**Figure 15: Generating the payload**](images/figure15EHIR.png)
- 
+<p align="center">
+  <img src="images/figure15EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 15:</b> Generating the payload</p>
 
 The apache web server then started and status checked, where it is confirmed to be running.
 
-![**Figure 16: Running the apache server and checking the status of it**](images/figure16EHIR.png)
-
+<p align="center">
+  <img src="images/figure16EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 16:</b> Running the apache server and checking the status of it</p>
 
 Then a Metasploit Handler is set up for the payload in another terminal.
 
-![**Figure 17: Setting up the metasploit handler**](images/figure17EHIR.png)
- 
+<p align="center">
+  <img src="images/figure17EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 17:</b> Setting up the metasploit handler</p>
 
 ---
 
@@ -194,44 +233,62 @@ Then a Metasploit Handler is set up for the payload in another terminal.
 
 Back in the original terminal where `exploit/windows/smb/ms17_010_eternalblue` is loaded, the exploit is run using the `exploit` command. The results show that “the target is vulnerable’. After a lot of processes, a “win” is shown in between lots of “-“, along with the last line which says `meterpreter session 1 opened`. A meterpreter prompt is also shown.
 
-![**Figure 18: Successfully running the exploit and gaining access to the victim machine**](images/figure18EHIR.png)
-
+<p align="center">
+  <img src="images/figure18EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 18:</b> Successfully running the exploit and gaining access to the victim machine</p>
 
 The WireShark output also shows a flurry of SMB-related packet between both machines.
 
-![**Figure 19: Various SMB traffic captured in Wireshark**](images/figure19EHIR.png)
-
+<p align="center">
+  <img src="images/figure19EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 19:</b> Various SMB traffic captured in Wireshark</p>
 
 The ransomware can be delivered and executed meterpreter by going into the shell through the meterpreter prompt.
 
-![**Figure 20: Entering and navigating the shell**](images/figure20EHIR.png)
-
+<p align="center">
+  <img src="images/figure20EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 20:</b> Entering and navigating the shell</p>
 
 After going to the right directory, the files that were created can be viewed. Then the ransomware payload is then installed into the Windows machine.
 
-![**Figure 21: Installing the payload on the victim's machine**](images/figure21EHIR.png)
- 
+<p align="center">
+  <img src="images/figure21EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 21:</b> Installing the payload on the victim's machine</p>
 
 Then, the ransomware is run using `Claim_Bonux.exe` which then opens the meterpreter session 1 in the handler terminal.
 
-![**Figure 22: Handler terminal result after executing the payload**](images/figure22EHIR.png)
- 
+<p align="center">
+  <img src="images/figure22EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 22:</b> Handler terminal result after executing the payload</p>
 
 From the perspective of a victim such as an office worker, it may seem like a file has appeared for them to claim their monthly bonus.
 
-![**Figure 23: Perspective of a victim**](images/figure23EHIR.png)
-
+<p align="center">
+  <img src="images/figure23EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 23:</b> Perspective of a victim</p>
 
 However, if it double-clicked in this case (In 2017, WannaCry propagated autonomously over SMB; here, msfvenom/Apache is a controlled lab delivery method only), the background instantly changes, various files and folders appear, the original text seems ciphers with random characters, and finally the “pay-up” page pops up.
 
-![**Figure 24: Background changes after executing the ransomware**](images/figure24EHIR.png)
+<p align="center">
+  <img src="images/figure24EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 24:</b> Background changes after executing the ransomware</p>
 
+<p align="center">
+  <img src="images/figure25EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 25:</b> Original files replaced with other various files and messages</p>
 
-![**Figure 25: Original files replaced with other various files and messages**](images/figure25EHIR.png)
-
-
-![**Figure 26: Ransom "Pay-up" Page**](images/figure26EHIR.png)
-  
+<p align="center">
+  <img src="images/figure26EHIR.png" width="750">
+</p>
+<p align="center"><b>Figure 26:</b> Ransom "Pay-up" Page</p>
 
 ---
 
