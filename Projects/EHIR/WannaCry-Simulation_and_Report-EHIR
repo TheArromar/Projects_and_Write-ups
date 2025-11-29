@@ -52,7 +52,7 @@ A Windows Virtual Machine is used as the target machine. It is isolated by confi
 
 Specifically, the Windows 7 machine is chosen for this, as the MS17-010 patch is not applied to it, thus making it a perfect target.
 
-![**Figure 1: Windows Patch history information**](images/Figure1EHIR.png)
+![**Figure 1: Windows Patch history information**](images/figure1EHIR.png)
 
 Wireshark is set running before the exploit is pushed to analyze the setup and the strike. The interesting traffic sits around SMB negotiation and subsequent Trans2/Tree Connect pattern gotten during the exploit attempt. Capturing first and acting after it keeps it clean and concrete by allowing to see the actual handshake and the post-connect behaviour.
 
@@ -96,9 +96,9 @@ The objective of this stage is to gather preliminary information about the targe
 
 The network adapter of both the Windows 7 machine and Kali Linux Virtual Machines (VMs) are set to custom, then VMnet1 for “Host-Only” connection to ensure isolation.
 
-![**Figure 2: Kali Linux network adapter information **](images/Figure2EHIR.png)
+![**Figure 2: Kali Linux network adapter information **](images/figure2EHIR.png)
 
-![**Figure 3: Windows 7 network adapter information**](images/Figure3EHIR.png)
+![**Figure 3: Windows 7 network adapter information**](images/figure3EHIR.png)
 
 Then ICMP and SMB inbound is enabled by going to `Control Panel -> Windows Firewall -> Advanced Security -> Inbound Rules` and setting both to “enable rule”. 
 
