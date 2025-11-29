@@ -1,0 +1,339 @@
+INDIVIDUAL ASSIGNMENT FOR UNIVERSITY MODULE EHIR (Ethical Hacking and Incident Response)
+
+---
+
+## Table of Contents
+
+1.0 [Introduction](#10-introduction)  
+2.0 [Selection of Techniques and Tools](#20-selection-of-techniques-and-tools)  
+3.0 [Impact of Selected Techniques and Tool](#30-impact-of-selected-techniques-and-tool)  
+4.0 [Demonstration of the Attack (Methodology)](#40-demonstration-of-the-attack-methodology)  
+&nbsp;&nbsp;&nbsp;&nbsp;4.1 [Foot printing & Reconnaissance](#41-foot-printing--reconnaissance)  
+&nbsp;&nbsp;&nbsp;&nbsp;4.2 [Computer and Network Scanning](#42-computer-and-network-scanning)  
+&nbsp;&nbsp;&nbsp;&nbsp;4.3 [Exploitation Phase (Delivering the Ransomware)](#43-exploitation-phase-delivering-the-ransomware)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.3.1 [Setting up the Lab Environment](#431-setting-up-the-lab-environment)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.3.2 [Configuring Metasploit for Eternal Blue](#432-configuring-metasploit-for-eternal-blue)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.3.3 [Preparing and Delivering the Ransomware Payload](#433-preparing-and-delivering-the-ransomware-payload)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.3.4 [Executing the Exploit and Triggering the Ransomware](#434-executing-the-exploit-and-triggering-the-ransomware)  
+5.0 [Critical Analysis of the Technique/Tool/Framework](#50-critical-analysis-of-the-techniquetoolframework)  
+&nbsp;&nbsp;&nbsp;&nbsp;5.1 [Technical Efficacy and Vulnerability Exploitation](#51-technical-efficacy-and-vulnerability-exploitation)  
+&nbsp;&nbsp;&nbsp;&nbsp;5.2 [Limitations and Constraints of the Simulation](#52-limitations-and-constraints-of-the-simulation)  
+&nbsp;&nbsp;&nbsp;&nbsp;5.3 [Ethical Considerations in Ransomware Simulation](#53-ethical-considerations-in-ransomware-simulation)  
+6.0 [Mitigations and Prevention Strategies](#60-mitigations-and-prevention-strategies)  
+7.0 [Discussion and reflection](#70-discussion-and-reflection)  
+8.0 [Bibliography](#80-bibliography)  
+
+---
+
+## 1.0 Introduction
+
+Out of various types of malwares, ransomware remains one of the most disruptive types, since it simultaneously halts business operations and created immediate pressure to pay the ransom to recover important business data.
+
+WannaCry, the 2017 worm-ransomware hybrid, is by far the most popular and disruptive cases of ransomware, as it took only a matter of hours to spread to more than 200,000 computers across more than 150 countries. Though not proven, this widespread attack is widely attributed to APT38, a.k.a. The Lazarus Group, a sophisticated state-sponsored threat actor (Radware, n.d.).
+
+It mainly works by abusing the legacy SMBv1 protocol and unpatched Windows hosts, then locking files and demanding up to $600 in Bitcoin. While it was fixed by Marcus Hutchins, the damage was done, causing service outages, canceled surgeries, manufacturing stoppages and more on a global scale. Researcher Marcus Hutchins discovered the kill switch domain, (iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com) hardcoded in the malware which then he registered for $10.69 for a DNS sinkhole which then stopped the attack spreading as a worm, since the ransomware encrypted the computer’s files if it was unable to connect to that domain.
+
+WannaCry works through the combination of:
+
+- Remote code execution via the MS17-010 SMBv1 vulnerability, which is better known as “EternalBlue” exploit.  
+- Worm-like self-propagation aided by an implant loader (“DoublePulsar”) combined with the ransomware payload (“Wana Decrypt0r 2.0”).
+
+This caused rapid lateral movement inside flat networks with exposed SMB, especially where the machines were neglected and not patched.
+
+WannaCry is chosen for this report since it perfectly maps the cyber kill chain, recon -> scanning -> exploitation -> persistence -> actions on objective.
+
+---
+
+## 2.0 Selection of Techniques and Tools 
+
+Metasploit Framework was used to model the exploitation stage. The `exploit/windows/smb/ms17_010_eternalblue` module targets the same vulnerability class associated with WannaCry’s initial foothold. Metasploit’s usage is straightforward with consistent setup, predictable logging, and the ability to pair an exploit with a controlled payload.
+
+A Windows Virtual Machine is used as the target machine. It is isolated by configuring the network setting to host-only, internet disabled and a snapshot ready to revert back to the clean installation. This ensures the mirroring of the conditions that proved risky in 2017 during the attack, which are legacy OS, SMBv1 present, with the patch not applied, and allows for the capture of exactly how the network is during the attack without risking a wider network. The VM is treated like a throwaway, where if anything occurred, it can be rolled back instantly.
+
+Specifically, the Windows 7 machine is chosen for this, as the MS17-010 patch is not applied to it, thus making it a perfect target.
+
+![**Figure 1: Windows Patch history information**](images/Figure1EHIR.png)
+
+Wireshark is set running before the exploit is pushed to analyze the setup and the strike. The interesting traffic sits around SMB negotiation and subsequent Trans2/Tree Connect pattern gotten during the exploit attempt. Capturing first and acting after it keeps it clean and concrete by allowing to see the actual handshake and the post-connect behaviour.
+
+**Msfvenom and Apache Web Server (for Payload Delivery):** For ethical reasons, a controlled delivery of a simulated ransomware payload was used instead of a real worm.
+
+- **Msfvenom:** This Metasploit utility generated a benign executable that mimicked ransomware behavior.  
+- **Apache Web Server:** An Apache server on the Kali Linux attacker machine hosted this executable. The target Windows VM could then download the payload via a simulated interaction, providing a controlled vector for the final attack stage.
+
+Although WannaCry spread autonomously over SMB during the actual attack in 2017, for this assignment and its legality and ethicality, an executable is generated with msfvenom and sent to the target machine using Apache in a shared directory. 
+
+---
+
+## 3.0 Impact of Selected Techniques and Tool
+
+**Fidelity to the Real-World Failure** – The reproduced attack chain (SMBv1 + missing MS17-010 patch leading to remote code execution and simulated ransomware behavior) accurately reflected the core technical vulnerabilities of the original WannaCry incident. This focus on the critical technical failure ensures that lessons learned are directly applicable to preventing similar future exploits, especially in flat networks.
+
+**Dual Vantage Points for Comprehensive Analysis** – The methodology consciously incorporated two distinct perspectives:
+
+- **Attacker's Perspective (Metasploit and Wireshark):** Metasploit provided the offense view, detailing exploit execution and session establishment. Wireshark offered a granular, on-the-wire perspective, dissecting network mechanics.  
+- **Responder's Perspective (Manual log analysis):** While Cuckoo was initially considered, even manual analysis of system changes would provide insights into host behavior post-compromise. This dual view mirrors real-world incident response scenarios, where network traffic and host-based artifacts are analyzed.
+
+**Minimalist and Predictable Delivery for Focused Learning** – Using `msfvenom` for a custom, benign payload delivered via Apache was a deliberate choice. This "`msfvenom -> Apache share -> multi/handler`" style is minimalistic and predictable. It offers several benefits:
+
+- **Repeatability:** The technique can be replicated across multiple scenarios for consistent evidence collection.  
+- **Focus on Vulnerability:** Simplifying delivery allowed focus on the MS17-010 vulnerability and remote code execution, rather than worm propagation complexities.  
+- **Ethical Compliance:** This controlled delivery ensured the simulation remained entirely within ethical boundaries, preventing accidental spread.
+
+These techniques and tools created an effective and ethically compliant laboratory environment, enabling a detailed, multi-perspective, and repeatable analysis of WannaCry's core mechanisms and impact.
+
+---
+
+## 4.0 Demonstration of the Attack (Methodology)
+
+This section details the step-by-step process of demonstrating the WannaCry-like attack, from initial information gathering to exploitation and simulated ransomware deployment.
+
+### 4.1 Foot printing & Reconnaissance
+
+The objective of this stage is to gather preliminary information about the target system without direct interaction.
+
+**VM Setup Verification**
+
+The network adapter of both the Windows 7 machine and Kali Linux Virtual Machines (VMs) are set to custom, then VMnet1 for “Host-Only” connection to ensure isolation.
+
+![**Figure 2: Kali Linux network adapter information **](images/Figure2EHIR.png)
+
+![**Figure 3: Windows 7 network adapter information**](images/Figure3EHIR.png)
+
+Then ICMP and SMB inbound is enabled by going to `Control Panel -> Windows Firewall -> Advanced Security -> Inbound Rules` and setting both to “enable rule”. 
+
+![**Figure 4: Inbound rules allowing ICMP and SMB inbound **](images/figure4EHIR.png)
+
+Then, as an additional measure, it is also checked whether the Windows Machine can run SMB protocol, where “STATE: 4 RUNNING” ensures it.
+
+![**Figure 5: Checking SMB Protocol **](images/figure5EHIR.png)
+
+Finally, both Kali Linux and Windows 7 machines’ IP addresses are checked using `ifconfig` and `ipconfig`. This is to ensure that both machines are in the same subnet and can communicate with each other through pinging.
+
+![**Figure 6: Windows 7 machine IP address**](images/figure6EHIR.png)
+
+
+![**Figure 7: Kali Linux IP address **](images/figure7EHIR.png)
+ 
+
+![**Figure 8: Pinging Windows 7 machine from Kali Linux**](images/figure8XEHIR.png)
+
+
+---
+
+### 4.2 Computer and Network Scanning
+
+This active phase probes the target for open ports, running services and vulnerabilities. 
+
+The objective of this section is to identify open SMB ports and confirm the presence of the MS17-010 vulnerability. 
+
+A basic port scan is done to check that port 445 is listed as “open”.
+
+![**Figure 9: Port Scan on port 445 with results**](images/figure9EHIR.png)
+
+
+Then Nmap’s script is used to confirm whether the MS17-010 (EternalBlue) exists. This Nmap scan confirms that our target is susceptible to the critical structural weakness that WannaCry exploited.
+
+![**Figure 10: Confirming the Existence of the Eternal Blue exploit using Nmap script**](images/figure10EHIR.png)
+
+
+---
+
+### 4.3 Exploitation Phase (Delivering the Ransomware)
+
+This core section uses the Metasploit framework to exploit the vulnerability and deliver a simulated ransomware payload.
+
+#### 4.3.1 Setting up the Lab Environment
+
+Wireshark is opened, to begin the packet capture and to monitor the network.
+
+![**Figure 11: Wireshark begins to monitor network**](images/figure11EHIR.png)
+
+
+A few dummy files are created in the desktop folder.
+
+![**Figure 12: Dummy files created**](images/figure12EHIR.png)
+
+
+---
+
+#### 4.3.2 Configuring Metasploit for Eternal Blue
+
+The Eternal Blue exploit is selected to simulate the WannaCry mechanism. It is also set with other exploit options as configuration.
+
+![**Figure 13: Configuring Metasploit for Eternal Blue**](images/figure13EHIR.png)
+ 
+
+A meterpreter reverse TCP payload is then used for an interactive shell. The `show options` command is also used to confirm the payload settings set previously.
+
+![**Figure 14: Creating the payload**](images/figure14EHIR.png)
+  
+
+---
+
+#### 4.3.3 Preparing and Delivering the Ransomware Payload
+
+The malware executable is then created at the `/var/www/html/share` directory which is a directory under the Apache’s web root.
+
+![**Figure 15: Generating the payload**](images/figure15EHIR.png)
+ 
+
+The apache web server then started and status checked, where it is confirmed to be running.
+
+![**Figure 16: Running the apache server and checking the status of it**](images/figure16EHIR.png)
+
+
+Then a Metasploit Handler is set up for the payload in another terminal.
+
+![**Figure 17: Setting up the metasploit handler**](images/figure17EHIR.png)
+ 
+
+---
+
+#### 4.3.4 Executing the Exploit and Triggering the Ransomware
+
+Back in the original terminal where `exploit/windows/smb/ms17_010_eternalblue` is loaded, the exploit is run using the `exploit` command. The results show that “the target is vulnerable’. After a lot of processes, a “win” is shown in between lots of “-“, along with the last line which says `meterpreter session 1 opened`. A meterpreter prompt is also shown.
+
+![**Figure 18: Successfully running the exploit and gaining access to the victim machine**](images/figure18EHIR.png)
+
+
+The WireShark output also shows a flurry of SMB-related packet between both machines.
+
+![**Figure 19: Various SMB traffic captured in Wireshark**](images/figure19EHIR.png)
+
+
+The ransomware can be delivered and executed meterpreter by going into the shell through the meterpreter prompt.
+
+![**Figure 20: Entering and navigating the shell**](images/figure20EHIR.png)
+
+
+After going to the right directory, the files that were created can be viewed. Then the ransomware payload is then installed into the Windows machine.
+
+![**Figure 21: Installing the payload on the victim's machine**](images/figure21EHIR.png)
+ 
+
+Then, the ransomware is run using `Claim_Bonux.exe` which then opens the meterpreter session 1 in the handler terminal.
+
+![**Figure 22: Handler terminal result after executing the payload**](images/figure22EHIR.png)
+ 
+
+From the perspective of a victim such as an office worker, it may seem like a file has appeared for them to claim their monthly bonus.
+
+![**Figure 23: Perspective of a victim**](images/figure23EHIR.png)
+
+
+However, if it double-clicked in this case (In 2017, WannaCry propagated autonomously over SMB; here, msfvenom/Apache is a controlled lab delivery method only), the background instantly changes, various files and folders appear, the original text seems ciphers with random characters, and finally the “pay-up” page pops up.
+
+![**Figure 24: Background changes after executing the ransomware**](images/figure24EHIR.png)
+
+
+![**Figure 25: Original files replaced with other various files and messages**](images/figure25EHIR.png)
+
+
+![**Figure 26: Ransom "Pay-up" Page**](images/figure26EHIR.png)
+  
+
+---
+
+## 5.0 Critical Analysis of the Technique/Tool/Framework
+
+The simulated WannaCry attack provided powerful insights into real-world cyber threats. A critical analysis reveals both the efficacy of the chosen techniques and their inherent limitations along with their justification.
+
+### 5.1 Technical Efficacy and Vulnerability Exploitation
+
+The chosen framework effectively demonstrated core technical principles of the WannaCry attack:
+
+- **Exploitation of Known Vulnerabilities:** The `ms17_010_eternalblue` Metasploit module successfully exploited the target's unpatched SMBv1 service. This highlights the critical importance of timely patch management and how an unaddressed vulnerability provides a high-privilege foothold on a system.  
+- **Leveraging Standard Protocols for Malicious Ends:** The attack chain showed how network protocols like SMB can be weaponized. Achieving remote code execution through SMBv1 demonstrated that unsecure network services are direct conduits for compromise.  
+- **Payload Delivery and Execution:** Using `msfvenom` to create a custom payload and delivering it via Meterpreter's `shell` command realistically represents how attackers, once access is gained, establish persistence or achieve their objective. This layered approach mirrors advanced persistent threat (APT) tactics.  
+- **Network Visibility with Wireshark:** Wireshark was crucial for demystifying the exploit. Capturing and analyzing traffic revealed SMB negotiation, exploit-specific packet signatures, and Meterpreter callback establishment. This granular insight is invaluable for developing robust Intrusion Detection System (IDS) rules and network forensics capabilities.
+
+### 5.2 Limitations and Constraints of the Simulation
+
+The lab environment had certain limitations compared to the actual WannaCry outbreak:
+
+- **Absence of Worm-like Propagation:** The simulation lacked WannaCry's autonomous worm component (“DoublePulsar”). The original ransomware spread laterally without user interaction. Our simulation required manual payload delivery and execution via a Meterpreter session. The focus was on initial exploitation, not self-propagation.  
+- **Controlled Environment:** The isolated host-only network did not replicate the complexities of a real enterprise network, which typically includes firewalls, segmentation, IDS/IPS, and diverse operating systems. This simplified the exploitation process compared to a more robust defense.  
+- **Benign Payload:** The `msfvenom`-created "ransomware" was a benign executable, designed to simulate behavior without causing actual, irreversible encryption. While sufficient for demonstration, it does not convey the full destructive impact of genuine ransomware data corruption.  
+- **Simplified Adversary Tactics:** A real attacker would likely employ more sophisticated evasion, obfuscation, anti-forensics, and persistence mechanisms. The simulation kept these minimal to focus on core vulnerability and exploitation.
+
+### 5.3 Ethical Considerations in Ransomware Simulation
+
+Simulating malware attacks, even in controlled environments, requires strict adherence to ethical guidelines:
+
+- **Isolation is Paramount:** The use of a host-only network and virtual machines was fundamental, ensuring no malicious code could escape the lab. This principle is non-negotiable.  
+- **Benign Payloads:** The deliberate use of a non-destructive, simulated ransomware payload was critical. This allowed studying ransomware behavior without causing actual harm or legal repercussions.  
+- **Educational Purpose:** The exercise's sole purpose was educational, aiming to understand vulnerabilities and develop defensive strategies, not to promote malicious activity.  
+- **No Attempt on Real Systems:** The explicit warning against testing these techniques on real environments underscores ethical responsibility.
+
+While acknowledging simplifications, the simulation's impact in conveying the critical importance of vulnerability management and layered defenses remains insightful.
+
+---
+
+## 6.0 Mitigations and Prevention Strategies
+
+Preventing and mitigating ransomware like WannaCry requires a multi-layered, proactive approach encompassing technical controls, organizational policies, and human factors.
+
+### 1. Mitigations for vulnerable systems
+
+- Apply MS17-010 and treat similar remote code execution bulletins as mission-critical activities and not as dismissible upgrades. The practical step is to patch service-level objective for criticals, for example, “deploy within two weeks unless a documented exception is approved”, then report exceptions to leadership until they’re closed.  
+- Disable SMBv1 wherever possible. If it must be kept for a legacy app, place that system in a restricted environment, allow only the necessary peers, and monitor it closely.  
+- Modernize OS baselines whenever possible. Environments dominated by older Windows versions were hit hardest, thus moving forward the “default” should be safer, even before extra controls are added.
+
+### 2. Network security improvements
+
+- Segment internally so a compromise on one subnet can’t sweep the entire company. A worm thrives on flatness. The goal is not “no SMB,” it is “SMB only where it’s truly needed,” with deny-by-default between segments.  
+- Filter server-to-server traffic and log it. Even simple rules such as blocking SMB between unrelated business units can remove obvious propagation paths.  
+- Control egress for unknown processes. If a ransomware family tries to reach out to payment pages, Tor bootstrap, or other opportunistic goals, limited egress makes it harder.
+
+### 3. Employee education and awareness
+
+WannaCry’s first wave wasn’t built around phishing, but most ransomware still is. The basics still work. Employees should be taught to not enable macros from unknown documents, don’t run unsigned executables from random shares, and use a password manager so you’re not reusing credentials. Short, frequent training beats one long lecture no one remembers. Additionally, it should be taught in a non-technical way with no jargons, slangs or hard-to-understand or pronounce terminologies to employees working in non-IT or even basic IT positions.
+
+### 4. Data backup and recovery
+
+- Always keep 2-4 copies which have different measures such as immutability, offsite, online, offline and so on.  
+- Test restores regularly. A backup that is never restored from is a guess, not a plan.  
+- Stage recovery so the clean network comes back first, then the least critical workloads, and finally the mission-critical services. Rushing an incomplete restoration can re-introduce the original problem.
+
+### 5. Incident response plans (practice the bad day)
+
+Have a short, practical playbook: isolate the host, take a memory snapshot if your tooling supports it, disable SMB on the affected segment if spread is suspected, and start a known, good restore. Pre-agree on communications and tasks, someone owns internal updates, someone owns external statements, and legal compliance is looped in early. Run this as a tabletop with lab VMs so the first time someone does it isn’t the first time they have ever done it.
+
+---
+
+## 7.0 Discussion and reflection
+
+The failure was ordinary, but the impact was not.
+
+There is nothing exotic about leaving a critical patch unapplied or exposing an old protocol inside a flat network. The interesting part is how quickly “ordinary” becomes “catastrophic” when the vulnerability is a worm and replicable. If you can move laterally without credentials, your detection window shrinks to minutes.
+
+**The network view and the host view tell the same story.**
+
+The dual vantage points provided by Wireshark (network view) and the Metasploit session (host view) offered a powerful, cohesive narrative of the attack. Observing SMB negotiation and exploit traffic in Wireshark directly correlated with the successful Meterpreter session and simulated ransomware execution on the host. This alignment where seeing the packet that initiated compromise and the process that spawned afterward, makes it much easier to convince stakeholders that mitigation steps are not optional paperwork. They are tied directly to how incidents unfold. 
+
+**Delivery is a means, not the story.**
+
+The delivery steps are deliberately simple. In this case, the unique point is the SMBv1/MS17-010 path; the delivery scaffolding just helps to capture and explain what happens next. This highlights that while attack delivery methods vary, the underlying vulnerability exploitation often remains the core issue. Focusing on patching and hardening core or outdated services, rather than solely on phishing awareness for instance, addresses the foundational weaknesses.
+
+**Perfect prevention isn’t necessary, but layers are.**
+
+You can make progress without waiting for big projects. Disabling SMBv1 on workstations, tightening server-to-server rules between the noisiest subnets, and setting a two-week SLO for remote code execution patches will dramatically reduce risk, even before a full segmentation redesign lands.
+
+The simulation underscored that seemingly ordinary security oversights can lead to catastrophic consequences when exploited by sophisticated malware. It emphasized the critical importance of a multi-faceted defense strategy through, secure network architecture, continuous patch management, robust data backup and recovery strategies, comprehensive employee education, and well-rehearsed incident response plans.
+
+---
+
+## 8.0 Bibliography
+
+Alraddadi, W., & Sarvotham, H. (2018). A comprehensive analysis of WannaCry: technical analysis, reverse engineering, and motivation. *International Journal of Computer Applications, 180*(3), 44–50.
+
+Acalvio Technologies. (n.d.). *WannaCry ransomware analysis: Lateral movement & propagation.* https://www.acalvio.com/ransomware/wannacry-ransomware-analysis-lateral-movement-propagation/
+
+Cloudflare. (n.d.). *What is WannaCry ransomware?* https://www.cloudflare.com/learning/security/ransomware/wannacry-ransomware/
+
+Cybersecurity & Infrastructure Security Agency (CISA). (2017). *WannaCry Ransomware.* https://www.cisa.gov/uscert/ncas/alerts/TA17-132A
+
+Fortinet. (n.d.). *What is WannaCry ransomware attack?* https://www.fortinet.com/resources/cyberglossary/wannacry-ransomware-attack
+
+Radware. (n.d.). *The Lazarus Group (APT38): North Korean threat actor.* https://www.radware.com/cyberpedia/ddos-attacks/the-lazarus-group-apt38-north-korean-threat-actor/
