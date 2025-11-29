@@ -1,7 +1,6 @@
-INDIVIDUAL ASSIGNMENT FOR UNIVERSITY MODULE EHIR (Ethical Hacking and Incident Response)  
+# INDIVIDUAL ASSIGNMENT FOR UNIVERSITY MODULE EHIR(Ethical Hacking and Incident Response)  
 
-SIMULATING WANNACRY ATTACK IN LOCAL SAFE VIRTUAL ENVIRONMENT  
-SYSTEM HACKING + MALWARE ANALYSIS AND REPORTING  
+Simulating WannaCry Attack in a controlled environment. (System Hacking + Malware Analysis and Reporting)
 
 ---
 
