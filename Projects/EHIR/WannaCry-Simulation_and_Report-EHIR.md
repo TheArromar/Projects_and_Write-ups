@@ -1,5 +1,5 @@
-INDIVIDUAL ASSIGNMENT FOR UNIVERSITY MODULE EHIR (Ethical Hacking and Incident Response)
-\n
+INDIVIDUAL ASSIGNMENT FOR UNIVERSITY MODULE EHIR (Ethical Hacking and Incident Response)  
+
 ---
 
 ## Table of Contents
